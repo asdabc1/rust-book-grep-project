@@ -35,44 +35,30 @@ pub fn run(args: &[String]) ->Result<(), Box<Error>> {
 
     let file_contents = read_from_file(&args.file_name)?;
 
-    if args.case_sensitive {
-        for line in search(args.query, file_contents.as_str()) {
-            println!("{line}");
-        }
-    }
-    else {
-        for line in search_case_insensitive(args.query, file_contents.as_str()) {
-            println!("{line}");
-        }
+    let result = match args.case_sensitive {
+        true => search(args.query, file_contents.as_str()),
+        false => search_case_insensitive(args.query, file_contents.as_str())
+    };
+
+    for line in result {
+        println!("{line}");
     }
 
     Ok(())
 }
 
 fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut result: Vec<&str> = Vec::new();
-
-    for line in contents.lines() {
-        if line.contains(query) {
-            result.push(line);
-        }
-    }
-
-    result
+    contents.lines()
+        .filter(|a| a.contains(query))
+        .collect()
 }
 
 fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut result: Vec<&str> = Vec::new();
-
     let query = query.to_lowercase();
 
-    for line in contents.lines() {
-        if line.to_lowercase().contains(&query) {
-            result.push(line);
-        }
-    }
-
-    result
+    contents.lines()
+        .filter(|a| a.to_lowercase().contains(&query))
+        .collect()
 }
 
 #[cfg(test)]
@@ -91,7 +77,7 @@ mod tests {
     fn passed_args_new_wont_unwrap_with_few_args() {
         let test_vec = vec!["raz".to_string()];
 
-        let p = PassedArguments::new(&test_vec).unwrap();
+        let _ = PassedArguments::new(&test_vec).unwrap();
     }
 
     #[test]
